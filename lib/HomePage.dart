@@ -9,6 +9,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
+import 'package:shared_preferences/shared_preferences.dart';
 
 
 class HomePage extends StatelessWidget {
@@ -1149,62 +1150,294 @@ class ArtSubmission {
   });
 }
 // Settings Page
-class SettingsPage extends StatelessWidget {
+class SettingsPage extends StatefulWidget {
+  @override
+  _SettingsPageState createState() => _SettingsPageState();
+}
+
+class _SettingsPageState extends State<SettingsPage> {
+  bool isDarkMode = false;
+  bool notificationsEnabled = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadSettings();
+  }
+
+  // Load settings from shared preferences
+  Future<void> _loadSettings() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      isDarkMode = prefs.getBool('isDarkMode') ?? false;
+      notificationsEnabled = prefs.getBool('notificationsEnabled') ?? true;
+    });
+  }
+
+  // Save settings to shared preferences
+  Future<void> _saveSettings() async {
+    final prefs = await SharedPreferences.getInstance();
+    prefs.setBool('isDarkMode', isDarkMode);
+    prefs.setBool('notificationsEnabled', notificationsEnabled);
+  }
+
+  // Toggle notification setting
+  void _toggleNotification(bool value) {
+    setState(() {
+      notificationsEnabled = value;
+    });
+    _saveSettings();
+  }
+
+  // Toggle dark mode setting
+  void _toggleDarkMode(bool value) {
+    setState(() {
+      isDarkMode = value;
+    });
+    _saveSettings();
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text("Settings"),
-        backgroundColor: Colors.tealAccent[700],
+    final theme = ThemeData(
+      brightness: isDarkMode ? Brightness.dark : Brightness.light,
+      primaryColor: Colors.teal,
+      hintColor: Colors.tealAccent,
+    );
+
+    return MaterialApp(
+      theme: theme,
+      home: Scaffold(
+        appBar: AppBar(
+          title: Text('Settings'),
+          backgroundColor: isDarkMode ? Colors.black : Colors.teal,
+        ),
+        body: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: ListView(
+            children: [
+              _buildAccountSection(),
+              _buildAppearanceSection(),
+              _buildNotificationSection(),
+              _buildPrivacySection(),
+            ],
+          ),
+        ),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
+    );
+  }
+
+  // Account settings section
+  Widget _buildAccountSection() {
+    return _buildSection(
+      title: 'Account Settings',
+      children: [
+        _buildListTile('Edit Profile', Icons.person, _onEditProfile),
+        _buildListTile('Change Password', Icons.lock, _onChangePassword),
+      ],
+    );
+  }
+
+  // Appearance settings section
+  Widget _buildAppearanceSection() {
+    return _buildSection(
+      title: 'Appearance',
+      children: [
+        _buildSwitchTile('Dark Mode', Icons.dark_mode, isDarkMode, _toggleDarkMode),
+      ],
+    );
+  }
+
+  // Notification settings section
+  Widget _buildNotificationSection() {
+    return _buildSection(
+      title: 'Notifications & Reminders',
+      children: [
+        _buildSwitchTile('Enable Notifications', Icons.notifications, notificationsEnabled, _toggleNotification),
+      ],
+    );
+  }
+
+  // Privacy settings section
+  Widget _buildPrivacySection() {
+    return _buildSection(
+      title: 'Privacy & Security',
+      children: [
+        _buildListTile('Privacy Policy', Icons.privacy_tip, _onPrivacyPolicy),
+        _buildListTile('Security Settings', Icons.security, _onSecuritySettings),
+      ],
+    );
+  }
+
+  // Helper method to create a section with a title and children
+  Widget _buildSection({
+    required String title,
+    required List<Widget> children,
+  }) {
+    return Card(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      elevation: 6,
+      child: Padding(
+        padding: const EdgeInsets.all(8.0),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              "Settings",
-              style: TextStyle(fontSize: 28, color: Colors.tealAccent[700]),
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8.0),
+              child: Text(
+                title,
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.tealAccent,
+                ),
+              ),
             ),
-            SwitchListTile(
-              title: Text("Dark Mode"),
-              value: true,
-              onChanged: (value) {
-                // Toggle dark mode
-              },
-            ),
+            ...children,
           ],
         ),
       ),
     );
+  }
+
+  // Helper method to create a list tile with an icon and an onTap handler
+  Widget _buildListTile(String title, IconData icon, VoidCallback onTap) {
+    return ListTile(
+      leading: Icon(icon, color: Colors.tealAccent),
+      title: Text(title, style: TextStyle(fontSize: 16, color: Colors.tealAccent)),
+      trailing: Icon(Icons.arrow_forward_ios, color: Colors.grey),
+      onTap: onTap,
+    );
+  }
+
+  // Helper method to create a switch list tile
+  Widget _buildSwitchTile(String title, IconData icon, bool value, ValueChanged<bool> onChanged) {
+    return SwitchListTile(
+      title: Text(title, style: TextStyle(fontSize: 16, color: Colors.tealAccent)),
+      secondary: Icon(icon, color: Colors.tealAccent),
+      value: value,
+      onChanged: onChanged,
+    );
+  }
+
+  // Placeholder method for Edit Profile
+  void _onEditProfile() {
+    print('Navigate to Edit Profile');
+  }
+
+  // Placeholder method for Change Password
+  void _onChangePassword() {
+    print('Navigate to Change Password');
+  }
+
+  // Placeholder method for Privacy Policy
+  void _onPrivacyPolicy() {
+    print('Navigate to Privacy Policy');
+  }
+
+  // Placeholder method for Security Settings
+  void _onSecuritySettings() {
+    print('Navigate to Security Settings');
   }
 }
 
 // About Us Page
-class AboutUsPage extends StatelessWidget {
+ class AboutUsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("About Us"),
-        backgroundColor: Colors.tealAccent[700],
+        title: Text('About Us'),
+        backgroundColor: Colors.teal,
       ),
-      body: Padding(
+      body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              "About Turtle Skatepark App",
-              style: TextStyle(fontSize: 28, color: Colors.tealAccent[700]),
+            _buildSectionTitle('Our Mission'),
+            _buildSectionContent(
+              "At Turtle, we're dedicated to creating a positive impact by promoting renewable energy, providing a safe space for all skaters, and celebrating the vibrant skateboarding culture. We believe in empowering the skater community of Christchurch, New Zealand, especially those in the Red Zone, to have fun while being eco-conscious. Through sustainable initiatives and local engagement, we aim to bring joy and renewable energy to all.",
             ),
-            SizedBox(height: 10),
-            Text(
-              "This app is designed to bring the skateboarding community together.",
-              style: TextStyle(fontSize: 16, color: Colors.white70),
+            SizedBox(height: 24),
+            _buildSectionTitle('What We Stand For'),
+            _buildSectionContent(
+              "We stand for inclusivity, sustainability, and community. Our goal is to provide a platform where skaters of all levels can come together and enjoy the sport they love. We're committed to fostering an environment of respect, where everyone feels welcomed and supported, regardless of their background. Through our efforts, we aim to make a tangible difference in both the skateboarding scene and the community of Christchurch.",
             ),
+            SizedBox(height: 24),
+            _buildSectionTitle('Giving Back to the Community'),
+            _buildSectionContent(
+              "In collaboration with local organizations, we're giving back to the people in the Red Zone of Christchurch. Through our efforts, we're providing opportunities for fun, physical activity, and renewable energy initiatives. We want to create a place where skaters can thrive while also contributing positively to the community's growth and well-being.",
+            ),
+            SizedBox(height: 24),
+            _buildSectionTitle('Join Us on Our Journey'),
+            _buildSectionContent(
+              "Whether you're a skater, an environmental enthusiast, or someone who believes in community, Turtle is here for you. We're constantly looking for like-minded individuals to join our mission. Together, we can create a space where skateboarding and renewable energy come together to make a lasting impact.",
+            ),
+            SizedBox(height: 24),
+            _buildContactButton(context),
           ],
         ),
       ),
     );
   }
-}
 
+  // Title for sections
+  Widget _buildSectionTitle(String title) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      child: Text(
+        title,
+        style: TextStyle(
+          color: Colors.tealAccent,
+          fontSize: 22,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+    );
+  }
+
+  // Content for each section
+  Widget _buildSectionContent(String content) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      child: Text(
+        content,
+        style: TextStyle(
+          color: Colors.white70,
+          fontSize: 16,
+          height: 1.6,
+        ),
+      ),
+    );
+  }
+
+  // Contact Button
+  Widget _buildContactButton(BuildContext context) {
+    return Center(
+      child: ElevatedButton(
+        onPressed: () {
+          // Add action to open contact page or similar
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Contact Us functionality coming soon!')),
+          );
+        },
+        style: ElevatedButton.styleFrom(
+          primary: Colors.teal,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(30),
+          ),
+          padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+        ),
+        child: Text(
+          'Contact Us',
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ),
+    );
+  }
+}
