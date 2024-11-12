@@ -23,3 +23,4 @@ class AuthService extends ChangeNotifier {
     notifyListeners(); // Notify listeners to update UI based on logout status
   }
 }
+

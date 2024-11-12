@@ -965,7 +965,7 @@ class _ArtSubmissionsPageState extends State<ArtSubmissionsPage> {
       artist: "Jordan Lee",
     ),
     ArtSubmission(
-      imageUrl: 'C:/Users/Zion/OneDrive/Skate Park IPRO/turtle/skate3.jpg',
+      imageUrl: '/assets/skate1.jpg',
       message: "March 2024 - A beautiful, raw representation of skate life.",
       artist: "Samantha Cruz",
     ),
